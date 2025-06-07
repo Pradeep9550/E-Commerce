@@ -12,11 +12,13 @@ import { useEffect, useState } from "react";
 import { fetchCartItems } from "@/store/shop/cart-slice";
 import { Label } from "../ui/label";
 
-function MenuItems() {
+function MenuItems({ setIsSheetOpen }) {
 
     const navigate = useNavigate();
     const location = useLocation();
     const [searchParams, setSearchParams ] = useSearchParams();
+
+    
 
     function handleNavigate(getCurrentMenuItem) {
         sessionStorage.removeItem("filters");
@@ -33,6 +35,8 @@ function MenuItems() {
           new URLSearchParams(`?category=${getCurrentMenuItem.id}`)
         )
       : navigate(getCurrentMenuItem.path);
+      setIsSheetOpen(false);
+      
   }
     
 
@@ -119,6 +123,7 @@ function HeaderRightContent() {
 function ShoppingHeader() {
 
     const { isAuthenticated } = useSelector((state) => state.auth);
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
     
 
 
@@ -129,15 +134,16 @@ function ShoppingHeader() {
                     <House className="h-6 w-6" />
                     <span className="font-bold">Ecommerce</span>
                 </Link>
-                <Sheet>
+                <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                     <SheetTrigger asChild>
-                        <Button variant="outline" size="icon" className="lg:hidden">
+                        <Button variant="outline" size="icon" className="lg:hidden" onClick={() => setIsSheetOpen(true)}>
                             <Menu className="h-6 w-6"/>
+                            
                             <span className="sr-only">Toggle header menu</span>
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="left" className="w-full max-w-xs">
-                        <MenuItems />
+                        <MenuItems  setIsSheetOpen={setIsSheetOpen} />
                         <HeaderRightContent />
                     </SheetContent>
                 </Sheet>
