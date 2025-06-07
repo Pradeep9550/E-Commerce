@@ -56,7 +56,7 @@ function AdminDashboard() {
               <div className="relative">
                 <img
                   src={featureImgItem.image}
-                  className="w-full h-[300px] object-cover rounded-t-lg"
+                  className="w-full h-[200px] sm:h-[350px] md:h-[450px] lg:h-[600px] overflow-hidden object-cover rounded-t-lg"
                 />
               </div>
             ))

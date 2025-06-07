@@ -97,7 +97,7 @@ function ShoppingHome() {
 
     return ( 
         <div className="flex flex-col min-h-screen">
-            <div className="relative w-full h-[600px] overflow-hidden">
+            <div className="relative w-full h-[200px] sm:h-[350px] md:h-[450px] lg:h-[600px] overflow-hidden">
                {featureImageList && featureImageList.length > 0
           ? featureImageList.map((slide, index) => (
               <img
@@ -112,24 +112,24 @@ function ShoppingHome() {
                 <Button 
                     variant="outline"
                     size="icon"
-                    className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white/80"
+                    className="absolute top-1/2 left-2 sm:left-4 transform -translate-y-1/2 bg-white/80 p-2 sm:p-3 z-20"
                     onClick={()=> setCurrentSlide(
                         (prevSlide) => (prevSlide - 1 + featureImageList.length) % featureImageList.length
                     )}
                 >
-                 <ChevronLeftIcon className='w-4 h-4'/>
+                 <ChevronLeftIcon className='w-4 h-4 sm:w-5 sm:h-5'/>
                 </Button>
                 <Button 
                     variant="outline"
                     size="icon"
-                    className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-white/80"
+                    className="absolute top-1/2 right-2 sm:right-4 transform -translate-y-1/2 bg-white/80 p-2 sm:p-3 z-20"
                     onClick={() =>
             setCurrentSlide(
               (prevSlide) => (prevSlide + 1) % featureImageList.length
             )
           }
                 >
-                 <ChevronRightIcon className='w-4 h-4'/>
+                 <ChevronRightIcon className='w-4 h-4 sm:w-5 sm:h-5'/>
                 </Button>
             </div>
             <section className='py-12 bg-gray-50'>

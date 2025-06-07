@@ -37,7 +37,7 @@ function MenuItems() {
     
 
     return (
-        <nav className="flex flex-col mb-3 lg:mb-0 lg:items-center gap-6 lg:flex-row">
+        <nav className="flex flex-col m-3 lg:m-0  lg:items-center gap-6 lg:flex-row">
         {
             shoppingViewHeaderMenuItems.map((menuItem) => (
                 <Label
@@ -70,7 +70,7 @@ function HeaderRightContent() {
       dispatch(fetchCartItems(user?.id))
     },[dispatch])
 
-    return <div className="flex lg:items-center lg:flex-row flex-col gap-4">
+    return <div className="flex m-3 lg:items-center lg:flex-row flex-col gap-4">
         <Sheet open={openCartSheet} onOpenChange={()=>setOpenCartSheet(false)}>
             <Button 
                 onClick={()=> setOpenCartSheet(true)}
