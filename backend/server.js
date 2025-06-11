@@ -25,6 +25,8 @@ mongoose.connect(process.env.MONGO_DB_URL)
 
 const app = express();
 
+app.options('*', cors());
+
 app.use(
   cors({
     origin: ['http://localhost:5173', 'https://e-commerce-frontend-xtf6.onrender.com', 'https://e-commerce-ten-theta-61.vercel.app'],
