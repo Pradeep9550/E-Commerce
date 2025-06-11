@@ -29,7 +29,7 @@ app.options('*', cors());
 
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'https://e-commerce-frontend-xtf6.onrender.com', 'https://e-commerce-ten-theta-61.vercel.app'],
+    origin: ['http://localhost:5173', 'https://e-commerce-frontend-xtf6.onrender.com'],
     methods: ["GET", "POST", "DELETE", "PUT"],
     allowedHeaders: [
       "Content-Type",
