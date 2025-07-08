@@ -41,6 +41,10 @@ app.use(
   })
 );
 
+app.options("*", cors({
+  origin: "https://e-commerce-ten-theta-61.vercel.app",
+  credentials: true
+}));
 app.use(cookieParser());
 app.use(express.json());
 
