@@ -56,10 +56,10 @@ function AdminOrdersView() {
                       <Badge
                         className={`py-1 px-3 text-white ${
                           orderItem?.orderStatus === "confirmed"
-                            ? "bg-green-500"
+                            ? "bg-green-500 text-white"
                             : orderItem?.orderStatus === "rejected"
-                            ? "bg-red-600"
-                            : "bg-black"
+                            ? "bg-red-600 text-white"
+                            : "bg-black text-white"
                         }`}
                       >
                         {orderItem?.orderStatus}
