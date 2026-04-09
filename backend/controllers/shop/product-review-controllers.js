@@ -4,35 +4,28 @@ const ProductReview = require("../../models/Review.model");
 
 const addProductReview = async (req, res) => {
   try {
-    const { productId, userId, userName, reviewMessage, reviewValue } =
-      req.body;
+    const { productId, userId, userName, reviewMessage, reviewValue } = req.body;
 
-    const order = await Order.findOne({
+    // ✅ check purchase (fast)
+    const hasPurchased = await Order.exists({
       userId,
       "cartItems.productId": productId,
-      // orderStatus: "confirmed" || "delivered",
     });
 
-    if (!order) {
-      return res.status(403).json({
-        success: false,
-        message: "You need to purchase product to review it.",
-      });
+    if (!hasPurchased) {
+      return res.status(403).json({ success: false });
     }
 
-    const checkExistinfReview = await ProductReview.findOne({
+    const alreadyReviewed = await ProductReview.exists({
       productId,
       userId,
     });
 
-    if (checkExistinfReview) {
-      return res.status(400).json({
-        success: false,
-        message: "You already reviewed this product!",
-      });
+    if (alreadyReviewed) {
+      return res.status(400).json({ success: false });
     }
 
-    const newReview = new ProductReview({
+    const review = await ProductReview.create({
       productId,
       userId,
       userName,
@@ -40,44 +33,44 @@ const addProductReview = async (req, res) => {
       reviewValue,
     });
 
-    await newReview.save();
+    // ⚡ aggregation (FAST)
+    const result = await ProductReview.aggregate([
+      { $match: { productId: new mongoose.Types.ObjectId(productId) } },
+      {
+        $group: {
+          _id: "$productId",
+          avg: { $avg: "$reviewValue" },
+        },
+      },
+    ]);
 
-    const reviews = await ProductReview.find({ productId });
-    const totalReviewsLength = reviews.length;
-    const averageReview =
-      reviews.reduce((sum, reviewItem) => sum + reviewItem.reviewValue, 0) /
-      totalReviewsLength;
+    await Product.findByIdAndUpdate(productId, {
+      averageReview: result[0]?.avg || 0,
+    });
 
-    await Product.findByIdAndUpdate(productId, { averageReview });
-
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      data: newReview,
+      data: review,
     });
+
   } catch (e) {
-    console.log(e);
-    res.status(500).json({
-      success: false,
-      message: "Error",
-    });
+    return res.status(500).json({ success: false, message: e.message });
   }
 };
 
 const getProductReviews = async (req, res) => {
   try {
-    const { productId } = req.params;
+    const reviews = await ProductReview.find({ productId: req.params.productId })
+      .select("userName reviewMessage reviewValue createdAt")
+      .lean();
 
-    const reviews = await ProductReview.find({ productId });
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: reviews,
     });
+
   } catch (e) {
-    console.log(e);
-    res.status(500).json({
-      success: false,
-      message: "Error",
-    });
+    return res.status(500).json({ success: false, message: e.message });
   }
 };
 

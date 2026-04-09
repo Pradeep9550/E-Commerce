@@ -2,19 +2,25 @@ const cloudinary = require('cloudinary').v2;
 const multer = require("multer");
 
 cloudinary.config({
-    cloud_name : "pradeepvermacloud",
-    api_key : "635298952372113",
-    api_secret : "rx9BD4C0lC_tJ1CNElJu9TuRtN8"
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET,
 });
+
+console.log(process.env.CLOUDINARY_KEY, "key cloudinary");
 
 const storage = new multer.memoryStorage();
 
-async function imageUploadUtil(file) {
-    const results = await cloudinary.uploader.upload(file, {
-        resource_type : 'auto'
-    });
-
-    return results;
+async function imageUploadUtil(buffer) {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.upload_stream(
+      { resource_type: "auto" },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    ).end(buffer);
+  });
 }
 
 const upload = multer({storage});

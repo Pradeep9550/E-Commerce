@@ -4,33 +4,31 @@ const addAddress = async (req, res) => {
   try {
     const { userId, address, city, pincode, phone, notes } = req.body;
 
-    if (!userId || !address || !city || !pincode || !phone || !notes) {
+    if (!userId || !address || !city || !pincode || !phone) {
       return res.status(400).json({
         success: false,
-        message: "Invalid data provided!",
+        message: "Missing required fields",
       });
     }
 
-    const newlyCreatedAddress = new Address({
+    const newAddress = await Address.create({
       userId,
       address,
       city,
       pincode,
-      notes,
       phone,
+      notes,
     });
 
-    await newlyCreatedAddress.save();
-
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      data: newlyCreatedAddress,
+      data: newAddress,
     });
+
   } catch (e) {
-    console.log(e);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Error",
+      message: e.message,
     });
   }
 };
@@ -38,24 +36,27 @@ const addAddress = async (req, res) => {
 const fetchAllAddress = async (req, res) => {
   try {
     const { userId } = req.params;
+
     if (!userId) {
       return res.status(400).json({
         success: false,
-        message: "User id is required!",
+        message: "User id required",
       });
     }
 
-    const addressList = await Address.find({ userId });
+    const addressList = await Address.find({ userId })
+      .select("address city pincode phone notes createdAt")
+      .lean();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: addressList,
     });
+
   } catch (e) {
-    console.log(e);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Error",
+      message: e.message,
     });
   }
 };
@@ -63,40 +64,39 @@ const fetchAllAddress = async (req, res) => {
 const editAddress = async (req, res) => {
   try {
     const { userId, addressId } = req.params;
-    const formData = req.body;
 
     if (!userId || !addressId) {
       return res.status(400).json({
         success: false,
-        message: "User and address id is required!",
+        message: "Invalid request",
       });
     }
 
-    const address = await Address.findOneAndUpdate(
+    const updatedAddress = await Address.findOneAndUpdate(
+      { _id: addressId, userId },
+      req.body,
       {
-        _id: addressId,
-        userId,
-      },
-      formData,
-      { new: true }
+        new: true,
+        lean: true, // ⚡ fast response
+      }
     );
 
-    if (!address) {
+    if (!updatedAddress) {
       return res.status(404).json({
         success: false,
         message: "Address not found",
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      data: address,
+      data: updatedAddress,
     });
+
   } catch (e) {
-    console.log(e);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Error",
+      message: e.message,
     });
   }
 };
@@ -104,31 +104,35 @@ const editAddress = async (req, res) => {
 const deleteAddress = async (req, res) => {
   try {
     const { userId, addressId } = req.params;
+
     if (!userId || !addressId) {
       return res.status(400).json({
         success: false,
-        message: "User and address id is required!",
+        message: "Invalid request",
       });
     }
 
-    const address = await Address.findOneAndDelete({ _id: addressId, userId });
+    const deleted = await Address.findOneAndDelete({
+      _id: addressId,
+      userId,
+    }).lean();
 
-    if (!address) {
+    if (!deleted) {
       return res.status(404).json({
         success: false,
         message: "Address not found",
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: "Address deleted successfully",
+      message: "Deleted successfully",
     });
+
   } catch (e) {
-    console.log(e);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Error",
+      message: e.message,
     });
   }
 };

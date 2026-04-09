@@ -99,7 +99,7 @@ function HeaderRightContent() {
         <DropdownMenuTrigger asChild>
           <Avatar className="bg-black">
             <AvatarFallback className="bg-black text-white font-extrabold">
-              {user?.userName[0].toUpperCase()}
+              {user?.userName?.[0].toUpperCase()}
             </AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>

@@ -1,5 +1,6 @@
 const express = require('express');
 const dotenv = require("dotenv")
+dotenv.config();
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
@@ -16,7 +17,9 @@ const shopReviewRouter = require('./routes/shop/review-routes.js');
 
 const commonFeatureRouter = require("./routes/common/feature-routes.js")
 
-dotenv.config();
+const dns = require("dns");
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+dns.setDefaultResultOrder("ipv4first");
 
 
 mongoose.connect(process.env.MONGO_DB_URL)

@@ -4,40 +4,44 @@ const addFeatureImage = async (req, res) => {
   try {
     const { image } = req.body;
 
-    console.log(image, "image");
+    if (!image) {
+      return res.status(400).json({
+        success: false,
+        message: "Image is required",
+      });
+    }
 
-    const featureImages = new Feature({
-      image,
-    });
+    const newImage = await Feature.create({ image }); // ⚡ faster
 
-    await featureImages.save();
-
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      data: featureImages,
+      data: newImage,
     });
+
   } catch (e) {
-    console.log(e);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Some error occured!",
+      message: e.message,
     });
   }
 };
 
 const getFeatureImages = async (req, res) => {
   try {
-    const images = await Feature.find({});
+    const images = await Feature.find({})
+      .sort({ createdAt: -1 }) // latest first ⚡
+      .select("image createdAt") // minimal data ⚡
+      .lean(); // 🔥 big performance boost
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: images,
     });
+
   } catch (e) {
-    console.log(e);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Some error occured!",
+      message: e.message,
     });
   }
 };

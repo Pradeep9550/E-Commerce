@@ -1,90 +1,113 @@
-
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../../models/User.model.js");
 
 //register
 const registerUser = async (req, res) => {
-  const { userName, email, password, role} = req.body;
-
   try {
-    const checkUser = await User.findOne({ email });
-    if (checkUser)
-      return res.json({
+    const { userName, email, password, role } = req.body;
+    if (!userName || !email || !password) {
+      return res.status(400).json({
         success: false,
-        message: "User Already exists with the same email! Please try again",
+        message: "All fields are required",
       });
+    }
 
-    const hashPassword = await bcrypt.hash(password, 12);
-    const newUser = new User({
+    const existingUser = await User.findOne({
+      $or: [{ email }, { userName }],
+    }).lean();
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
+
+    const hashPassword = await bcrypt.hash(password, 10);
+
+    await User.create({
       userName,
       email,
       password: hashPassword,
-      role
+      role,
     });
 
-    await newUser.save();
-    res.status(200).json({
+    return res.status(201).json({
       success: true,
-      message: "Registration successful",
+      message: "Registration successfully",
     });
   } catch (e) {
-    console.log(e);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Some error occured",
+      message: e.message,
     });
   }
 };
 
 //login
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
-
   try {
-    const checkUser = await User.findOne({ email });
-    if (!checkUser)
-      return res.json({
-        success: false,
-        message: "User doesn't exists! Please register first",
-      });
+    const { email, password } = req.body;
 
-    const checkPasswordMatch = await bcrypt.compare(
-      password,
-      checkUser.password
-    );
-    if (!checkPasswordMatch)
-      return res.json({
+    // ✅ fast validation
+    if (!email || !password) {
+      return res.status(400).json({
         success: false,
-        message: "Incorrect password! Please try again",
+        message: "Email and password are required",
       });
+    }
 
+    // ✅ optimized query (only needed fields)
+    const user = await User.findOne({ email })
+      .select("_id password role email userName")
+      .lean();
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User doesn't exist!",
+      });
+    }
+
+    // ✅ password compare
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Incorrect password",
+      });
+    }
+
+    // ✅ lightweight token (fast)
     const token = jwt.sign(
-      {
-        id: checkUser._id,
-        role: checkUser.role,
-        email: checkUser.email,
-        userName: checkUser.userName,
-      },
-      "CLIENT_SECRET_KEY",
-      { expiresIn: "60d" }
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" },
     );
 
-    res.cookie("token", token, { httpOnly: true, secure: false }).json({
+    // ✅ optimized cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
       success: true,
-      message: "Logged in successfully",
+      message: "Login successfully",
       user: {
-        email: checkUser.email,
-        role: checkUser.role,
-        id: checkUser._id,
-        userName: checkUser.userName,
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        userName: user.userName,
       },
     });
   } catch (e) {
-    console.log(e);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Some error occured",
+      message: e.message,
     });
   }
 };
@@ -99,22 +122,25 @@ const logoutUser = (req, res) => {
 };
 
 //auth middleware
-const authMiddleware = async (req, res, next) => {
-  const token = req.cookies.token;
-  if (!token)
-    return res.status(401).json({
-      success: false,
-      message: "Unauthorised user!",
-    });
-
+const authMiddleware = (req, res, next) => {
   try {
-    const decoded = jwt.verify(token, "CLIENT_SECRET_KEY");
+    const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
     req.user = decoded;
     next();
   } catch (error) {
-    res.status(401).json({
+    return res.status(401).json({
       success: false,
-      message: "Unauthorised user!",
+      message: "Invalid or expired token",
     });
   }
 };

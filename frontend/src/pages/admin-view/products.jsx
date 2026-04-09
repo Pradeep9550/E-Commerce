@@ -90,11 +90,15 @@ function AdminProducts() {
   }
 
   function isFormValid() {
-    return Object.keys(formData)
-      .filter((currentKey) => currentKey !== "averageReview")
-      .map((key) => formData[key] !== "")
-      .every((item) => item);
-  }
+  return Object.keys(formData)
+    .filter(
+      (key) =>
+        key !== "averageReview" &&
+        key !== "salePrice" // ✅ optional field ignore
+    )
+    .map((key) => formData[key] !== "")
+    .every((item) => item);
+}
 
   useEffect(() => {
     dispatch(fetchAllProducts());

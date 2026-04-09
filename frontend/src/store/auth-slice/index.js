@@ -10,36 +10,40 @@ const initialState = {
 }
 
 export const registerUser = createAsyncThunk(
-    "/auth/register",
-  
-    async (formData) => {
+  "/auth/register",
+  async (formData, { rejectWithValue }) => {
+    try {
       const response = await axios.post(
         "https://e-commerce-backend-kx09.onrender.com/api/auth/register",
         formData,
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
-  
+
       return response.data;
+
+    } catch (error) {
+      return rejectWithValue(error.response.data); // 🔥 IMPORTANT
     }
-  );
+  }
+);
 
   export const loginUser = createAsyncThunk(
-    "/auth/login",
-  
-    async (formData) => {
+  "/auth/login",
+  async (formData, { rejectWithValue }) => {
+    try {
       const response = await axios.post(
         "https://e-commerce-backend-kx09.onrender.com/api/auth/login",
         formData,
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
-  
+
       return response.data;
+
+    } catch (error) {
+      return rejectWithValue(error.response.data); // 🔥 IMPORTANT
     }
-  );
+  }
+);
 
   export const logoutUser = createAsyncThunk(
   "/auth/logout",

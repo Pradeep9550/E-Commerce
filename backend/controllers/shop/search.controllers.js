@@ -4,36 +4,27 @@ const Product = require("../../models/Product.model");
 const searchProducts = async (req, res) => {
   try {
     const { keyword } = req.params;
-    if (!keyword || typeof keyword !== "string") {
-      return res.status(400).json({
-        succes: false,
-        message: "Keyword is required and must be in string format",
-      });
+
+    if (!keyword) {
+      return res.status(400).json({ success: false });
     }
 
-    const regEx = new RegExp(keyword, "i");
+    const products = await Product.find(
+      { $text: { $search: keyword } },
+      { score: { $meta: "textScore" } }
+    )
+      .sort({ score: { $meta: "textScore" } })
+      .select("title price salePrice image")
+      .limit(10)
+      .lean();
 
-    const createSearchQuery = {
-      $or: [
-        { title: regEx },
-        { description: regEx },
-        { category: regEx },
-        { brand: regEx },
-      ],
-    };
-
-    const searchResults = await Product.find(createSearchQuery);
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      data: searchResults,
+      data: products,
     });
+
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      success: false,
-      message: "Error",
-    });
+    return res.status(500).json({ success: false });
   }
 };
 

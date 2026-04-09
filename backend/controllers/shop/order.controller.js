@@ -26,8 +26,8 @@ const createOrder = async (req, res) => {
         payment_method: "paypal",
       },
       redirect_urls: {
-        return_url: "http://localhost:5173/shop/paypal-return",
-        cancel_url: "http://localhost:5173/shop/paypal-cancel",
+        return_url: "https://e-commerce-ten-theta-61.vercel.app/shop/paypal-return",
+        cancel_url: "https://e-commerce-ten-theta-61.vercel.app/shop/paypal-cancel",
       },
       transactions: [
         {
@@ -99,77 +99,54 @@ const capturePayment = async (req, res) => {
   try {
     const { paymentId, payerId, orderId } = req.body;
 
-    let order = await Order.findById(orderId);
+    const order = await Order.findById(orderId);
 
     if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: "Order can not be found",
-      });
+      return res.status(404).json({ success: false, message: "Order not found" });
     }
+
+    // ✅ bulk update (🔥 huge performance boost)
+    const bulkOps = order.cartItems.map(item => ({
+      updateOne: {
+        filter: { _id: item.productId },
+        update: { $inc: { totalStock: -item.quantity } },
+      }
+    }));
+
+    await Product.bulkWrite(bulkOps);
+
+    await Cart.findByIdAndDelete(order.cartId);
 
     order.paymentStatus = "paid";
     order.orderStatus = "confirmed";
     order.paymentId = paymentId;
     order.payerId = payerId;
 
-    for (let item of order.cartItems) {
-      let product = await Product.findById(item.productId);
-
-      if (!product) {
-        return res.status(404).json({
-          success: false,
-          message: `Not enough stock for this product ${product.title}`,
-        });
-      }
-
-      product.totalStock -= item.quantity;
-
-      await product.save();
-    }
-
-    const getCartId = order.cartId;
-    await Cart.findByIdAndDelete(getCartId);
-
     await order.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Order confirmed",
       data: order,
     });
+
   } catch (e) {
-    console.log(e);
-    res.status(500).json({
-      success: false,
-      message: "Some error occured!",
-    });
+    return res.status(500).json({ success: false, message: e.message });
   }
 };
 
 const getAllOrdersByUser = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const orders = await Order.find({ userId: req.params.userId })
+      .lean();
 
-    const orders = await Order.find({ userId });
-
-    if (!orders.length) {
-      return res.status(404).json({
-        success: false,
-        message: "No orders found!",
-      });
-    }
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: orders,
     });
+
   } catch (e) {
-    console.log(e);
-    res.status(500).json({
-      success: false,
-      message: "Some error occured!",
-    });
+    return res.status(500).json({ success: false, message: e.message });
   }
 };
 

@@ -27,20 +27,20 @@ function AuthRegister(){
 function onSubmit(event) {
     event.preventDefault();
     
-    dispatch(registerUser(formData)).then((data) => {   
-        if (data?.payload?.success) {
-            toast.success(data?.payload?.message); 
-            navigate("/auth/login");  
-        } else {
-            toast.error(data?.payload?.message, {
-  style: {
-    backgroundColor: 'red',
-    color: 'white',
-    fontWeight: 'bold',
-  },
+    dispatch(registerUser(formData)).then((res) => {
+  if (res.meta.requestStatus === "fulfilled" && res.payload.success) {
+    toast.success(res.payload.message);
+    navigate("/auth/login");
+  } else {
+    toast.error(res.payload?.message || "Registration failed", {
+      style: {
+        backgroundColor: "#ef4444",
+        color: "white",
+        fontWeight: "bold",
+      },
+    });
+  }
 });
-        }
-    })
 }
     console.log(formData)
 
