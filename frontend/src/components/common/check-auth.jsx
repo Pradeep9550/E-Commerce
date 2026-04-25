@@ -5,9 +5,9 @@ function CheckAuth({ isAuthenticated, user, isLoading, children }) {
   const location = useLocation();
 
   // ✅ 1. PayPal return को कभी block मत करो
-  if (location.pathname.includes("paypal-return")) {
-    return children;
-  }
+  if (location.pathname === "/paypal-return") {
+  return children;
+}
 
   // ✅ 2. जब तक auth check चल रहा है wait करो
   if (isLoading) {

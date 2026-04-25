@@ -18,6 +18,7 @@ import UnauthPage from "./pages/unauth-page/index.jsx";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { checkAuth } from "./store/auth-slice/index.js";
+import { Skeleton } from "@/components/ui/skeleton"
 import PaypalReturnPage from "./pages/shopping-view/paypal-return.jsx";
 import PaymentSuccessPage from "./pages/shopping-view/payment-success.jsx";
 import SearchProducts from "./pages/shopping-view/search.jsx";
@@ -27,12 +28,13 @@ function App() {
   const { user, isAuthenticated, isLoading } = useSelector(
     (state) => state.auth
   );
-
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(checkAuth());
   }, [dispatch]);
+
+  // if (isLoading) return <Skeleton className="w-[800] bg-black h-[600px]" />;
 
   return (
     <div className="flex flex-col overflow-hidden bg-white">
@@ -40,22 +42,24 @@ function App() {
       <Routes>
 
         <Route path="/" element={
-          <CheckAuth
-            isAuthenticated={isAuthenticated}
-            user={user}
-            isLoading={isLoading}
-          />
-        } />
+            <CheckAuth
+              isAuthenticated={isAuthenticated}
+              user={user}
+              isLoading={isLoading}   // ✅ ADD
+            ></CheckAuth>
+          }
+        />
 
         <Route path="/auth" element={
           <CheckAuth 
             isAuthenticated={isAuthenticated} 
             user={user}
-            isLoading={isLoading}
+            isLoading={isLoading}   // ✅ ADD
           >
             <AuthLayout />
           </CheckAuth>
-        }>
+          }>
+
           <Route path="login" element={<AuthLogin />} />
           <Route path="register" element={<AuthRegister />} />
         </Route>
@@ -64,22 +68,22 @@ function App() {
           <CheckAuth 
             isAuthenticated={isAuthenticated} 
             user={user}
-            isLoading={isLoading}
+            isLoading={isLoading}   // ✅ ADD
           >
             <AdminLayout/>
           </CheckAuth>
         }>
-          <Route path="dashboard" element={<AdminDashboard/>}/>
-          <Route path="products" element={<AdminProducts/>}/>
-          <Route path="features" element={<AdminFeatures/>}/>
-          <Route path="orders" element={<AdminOrders/>}/>
+         <Route path="dashboard" element={<AdminDashboard/>}/>
+         <Route path="products" element={<AdminProducts/>}/>
+         <Route path="features" element={<AdminFeatures/>}/>
+         <Route path="orders" element={<AdminOrders/>}/>
         </Route>
 
         <Route path="/shop" element={
           <CheckAuth 
             isAuthenticated={isAuthenticated} 
             user={user}
-            isLoading={isLoading}
+            isLoading={isLoading}   // ✅ ADD
           >
             <ShoppingLayout/>
           </CheckAuth>
@@ -92,9 +96,9 @@ function App() {
           <Route path="search" element={<SearchProducts />} />
         </Route>
 
-        {/* ✅ PayPal return हमेशा बाहर */}
-        <Route path="/shop/paypal-return" element={<PaypalReturnPage />} />
-
+        {/* ✅ Paypal return outside auth */}
+        <Route path="/paypal-return" element={<PaypalReturnPage />} />
+        
         <Route path="/unauth-page" element={<UnauthPage/>} />
         <Route path="*" element={<NotFound/>} />
 
