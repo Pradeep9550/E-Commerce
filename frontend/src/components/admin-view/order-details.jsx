@@ -19,7 +19,7 @@ function AdminOrderDetailsView({ orderDetails }) {
   const dispatch = useDispatch();
 
 
-  console.log(orderDetails, "orderDetailsorderDetails");
+  console.log(orderDetails, "orderDetailsorderDetails");  
 
   function handleUpdateStatus(event) {
     event.preventDefault();

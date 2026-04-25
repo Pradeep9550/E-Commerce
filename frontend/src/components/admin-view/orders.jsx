@@ -1,13 +1,23 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../ui/table";
 import { Badge } from "../ui/badge";
 import { Dialog } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { getAllOrdersForAdmin, getOrderDetailsForAdmin, resetOrderDetails } from "@/store/admin/order-slice";
+import {
+  getAllOrdersForAdmin,
+  getOrderDetailsForAdmin,
+  resetOrderDetails,
+} from "@/store/admin/order-slice";
 import AdminOrderDetailsView from "./order-details";
-
 
 function AdminOrdersView() {
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
@@ -22,7 +32,7 @@ function AdminOrdersView() {
     dispatch(getAllOrdersForAdmin());
   }, [dispatch]);
 
-  console.log(orderDetails, "orderList");
+  console.log(orderList, "orderList");
 
   useEffect(() => {
     if (orderDetails !== null) setOpenDetailsDialog(true);
@@ -51,15 +61,19 @@ function AdminOrdersView() {
               ? orderList.map((orderItem) => (
                   <TableRow>
                     <TableCell>{orderItem?._id}</TableCell>
-                    <TableCell>{orderItem?.orderDate.split("T")[0]}</TableCell>
+                    <TableCell>
+                      {orderItem?.orderDate
+                        ? orderItem.orderDate.split("T")[0]
+                        : "N/A"}
+                    </TableCell>
                     <TableCell>
                       <Badge
                         className={`py-1 px-3 text-white ${
                           orderItem?.orderStatus === "confirmed"
                             ? "bg-green-500 text-white"
                             : orderItem?.orderStatus === "rejected"
-                            ? "bg-red-600 text-white"
-                            : "bg-black text-white"
+                              ? "bg-red-600 text-white"
+                              : "bg-black text-white"
                         }`}
                       >
                         {orderItem?.orderStatus}
