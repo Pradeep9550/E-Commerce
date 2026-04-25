@@ -23,10 +23,6 @@ import PaypalReturnPage from "./pages/shopping-view/paypal-return.jsx";
 import PaymentSuccessPage from "./pages/shopping-view/payment-success.jsx";
 import SearchProducts from "./pages/shopping-view/search.jsx";
 
-
-
-
-
 function App() {
   
   const { user, isAuthenticated, isLoading } = useSelector(
@@ -41,7 +37,6 @@ function App() {
   if (isLoading) return <Skeleton className="w-[800] bg-black h-[600px]" />;
 
   return (
-    
     <div className="flex flex-col overflow-hidden bg-white">
 
       <Routes>
@@ -50,12 +45,17 @@ function App() {
             <CheckAuth
               isAuthenticated={isAuthenticated}
               user={user}
+              isLoading={isLoading}   // ✅ ADD
             ></CheckAuth>
           }
         />
 
         <Route path="/auth" element={
-          <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+          <CheckAuth 
+            isAuthenticated={isAuthenticated} 
+            user={user}
+            isLoading={isLoading}   // ✅ ADD
+          >
             <AuthLayout />
           </CheckAuth>
           }>
@@ -65,7 +65,11 @@ function App() {
         </Route>
 
         <Route path="/admin" element={
-          <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+          <CheckAuth 
+            isAuthenticated={isAuthenticated} 
+            user={user}
+            isLoading={isLoading}   // ✅ ADD
+          >
             <AdminLayout/>
           </CheckAuth>
         }>
@@ -76,21 +80,25 @@ function App() {
         </Route>
 
         <Route path="/shop" element={
-          <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+          <CheckAuth 
+            isAuthenticated={isAuthenticated} 
+            user={user}
+            isLoading={isLoading}   // ✅ ADD
+          >
             <ShoppingLayout/>
           </CheckAuth>
         }>
-          <Route path="home"  element={<ShoppingHome/>} /> 
-          <Route path="listing"  element={<ShoppingListing/>} /> 
-          <Route path="checkout"  element={<ShoppingCheckout/>} /> 
-          <Route path="account"  element={<ShoppingAccount/>} /> 
+          <Route path="home" element={<ShoppingHome/>} /> 
+          <Route path="listing" element={<ShoppingListing/>} /> 
+          <Route path="checkout" element={<ShoppingCheckout/>} /> 
+          <Route path="account" element={<ShoppingAccount/>} /> 
           <Route path="payment-success" element={<PaymentSuccessPage />} />
           <Route path="search" element={<SearchProducts />} />
         </Route>
 
+        {/* ✅ Paypal return outside auth */}
         <Route path="/shop/paypal-return" element={<PaypalReturnPage />} />
         
-       
         <Route path="/unauth-page" element={<UnauthPage/>} />
         <Route path="*" element={<NotFound/>} />
 
@@ -99,4 +107,4 @@ function App() {
   );
 }
 
-export default App
+export default App;
