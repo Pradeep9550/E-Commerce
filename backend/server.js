@@ -33,8 +33,7 @@ const app = express();
 
 // ✅ Middlewares
 app.use(cors({
-  origin: ['https://e-commerce-frontend-xtf6.onrender.com'],
-  methods: ["GET", "POST", "DELETE", "PUT"],
+  origin: "https://e-commerce-frontend-xtf6.onrender.com",
   credentials: true,
 }));
 
