@@ -1,9 +1,13 @@
 const express = require('express');
-const dotenv = require("dotenv")
+const dotenv = require("dotenv");
+const path = require("path");
+
 dotenv.config();
+
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
+
 const authRouter = require("./routes/auth/auth.routes.js");
 const adminProductsRouter = require("./routes/admin/products-routes.js");
 const adminOrdersRouter = require("./routes/admin/order-routes.js");
@@ -15,12 +19,11 @@ const shopOrderRouter = require('./routes/shop/order-routes.js');
 const shopSearchRouter = require('./routes/shop/search-routes.js');
 const shopReviewRouter = require('./routes/shop/review-routes.js');
 
-const commonFeatureRouter = require("./routes/common/feature-routes.js")
+const commonFeatureRouter = require("./routes/common/feature-routes.js");
 
 const dns = require("dns");
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 dns.setDefaultResultOrder("ipv4first");
-
 
 mongoose.connect(process.env.MONGO_DB_URL)
 .then(() => console.log("MongoDB Connected"))
@@ -28,47 +31,38 @@ mongoose.connect(process.env.MONGO_DB_URL)
 
 const app = express();
 
-
-app.use(
-  cors({
-    origin: ['https://e-commerce-frontend-xtf6.onrender.com'],
-    methods: ["GET", "POST", "DELETE", "PUT"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Cache-Control",
-      "Expires",
-      "Pragma",
-    ],
-    credentials: true,
-  })
-);
-
-app.options("*", cors({
-  origin: "https://e-commerce-frontend-xtf6.onrender.com",
-  credentials: true
+// ✅ Middlewares
+app.use(cors({
+  origin: ['https://e-commerce-frontend-xtf6.onrender.com'],
+  methods: ["GET", "POST", "DELETE", "PUT"],
+  credentials: true,
 }));
+
 app.use(cookieParser());
 app.use(express.json());
 
+// ✅ Routes
 app.use("/api/auth", authRouter);
-
 app.use("/api/admin/products", adminProductsRouter);
 app.use("/api/admin/orders", adminOrdersRouter);
-
 app.use("/api/shop/products", shopProductsRouter);
 app.use("/api/shop/cart", shopCartRouter);
 app.use("/api/shop/address", shopAddressRouter);
 app.use("/api/shop/order", shopOrderRouter);
 app.use("/api/shop/search", shopSearchRouter);
 app.use("/api/shop/review", shopReviewRouter);
-
 app.use("/api/common/feature", commonFeatureRouter);
 
 
+// 🔥 VERY IMPORTANT (SPA FIX)
+app.use(express.static(path.join(__dirname, "dist")));
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server running at ${process.env.PORT}`);
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
 
 
+// ✅ LAST me listen
+app.listen(process.env.PORT, () => {
+  console.log(`Server running at ${process.env.PORT}`);
+});
