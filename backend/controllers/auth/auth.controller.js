@@ -81,7 +81,7 @@ const loginUser = async (req, res) => {
 
     // ✅ lightweight token (fast)
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      { id: user._id, role: user.role, userName: user.userName },
       process.env.JWT_SECRET,
       { expiresIn: "30d" },
     );
