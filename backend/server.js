@@ -31,7 +31,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ['https://e-commerce-ten-theta-61.vercel.app'],
+    origin: ['https://e-commerce-frontend-xtf6.onrender.com'],
     methods: ["GET", "POST", "DELETE", "PUT"],
     allowedHeaders: [
       "Content-Type",
@@ -45,7 +45,7 @@ app.use(
 );
 
 app.options("*", cors({
-  origin: "https://e-commerce-ten-theta-61.vercel.app",
+  origin: "https://e-commerce-frontend-xtf6.onrender.com",
   credentials: true
 }));
 app.use(cookieParser());
