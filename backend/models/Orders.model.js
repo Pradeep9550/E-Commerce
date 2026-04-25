@@ -44,6 +44,8 @@ const OrderSchema = new mongoose.Schema(
     totalAmount: Number,
     paymentId: String,
     payerId: String,
+    orderDate: Date,
+  orderUpdateDate: Date,
   },
   { timestamps: true }
 );

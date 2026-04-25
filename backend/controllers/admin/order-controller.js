@@ -3,7 +3,7 @@ const Order = require("../../models/Orders.model")
 const getAllOrdersOfAllUsers = async (req, res) => {
   try {
     const orders = await Order.find({})
-      .select("userId totalAmount orderStatus createdAt")
+      .select("userId totalAmount orderStatus createdAt orderDate")
       .sort({ createdAt: -1 })
       .lean();
 
