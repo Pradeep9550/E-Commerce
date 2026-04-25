@@ -7,17 +7,29 @@ import { useLocation } from "react-router-dom";
 function PaypalReturnPage() {
   const dispatch = useDispatch();
   const location = useLocation();
+
   const params = new URLSearchParams(location.search);
   const paymentId = params.get("paymentId");
   const payerId = params.get("PayerID");
 
   useEffect(() => {
     if (paymentId && payerId) {
-      const orderId = JSON.parse(sessionStorage.getItem("currentOrderId"));
+      const orderId = localStorage.getItem("currentOrderId");
 
-      dispatch(capturePayment({ paymentId, payerId, orderId })).then((data) => {
-        if (data?.payload?.success) {
-          sessionStorage.removeItem("currentOrderId");
+      if (!orderId) {
+        console.error("OrderId missing");
+        return;
+      }
+
+      dispatch(
+        capturePayment({
+          paymentId,
+          payerId,
+          orderId,
+        })
+      ).then((res) => {
+        if (res?.payload?.success) {
+          localStorage.removeItem("currentOrderId");
           window.location.href = "/shop/payment-success";
         }
       });
@@ -27,7 +39,7 @@ function PaypalReturnPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Processing Payment...Please wait!</CardTitle>
+        <CardTitle>Processing Payment... Please wait!</CardTitle>
       </CardHeader>
     </Card>
   );

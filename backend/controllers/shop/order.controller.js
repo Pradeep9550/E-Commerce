@@ -99,41 +99,90 @@ const capturePayment = async (req, res) => {
   try {
     const { paymentId, payerId, orderId } = req.body;
 
+    // 🔒 Step 1: Validate order
     const order = await Order.findById(orderId);
 
     if (!order) {
-      return res.status(404).json({ success: false, message: "Order not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
     }
 
-    // ✅ bulk update (🔥 huge performance boost)
-    const bulkOps = order.cartItems.map(item => ({
-      updateOne: {
-        filter: { _id: item.productId },
-        update: { $inc: { totalStock: -item.quantity } },
+    // 🔥 Step 2: Prevent duplicate payment
+    if (order.paymentStatus === "paid") {
+      return res.status(400).json({
+        success: false,
+        message: "Payment already captured",
+      });
+    }
+
+    // 🔒 Step 3: Execute payment (VERIFY FROM PAYPAL)
+    const execute_payment_json = {
+      payer_id: payerId,
+    };
+
+    paypal.payment.execute(
+      paymentId,
+      execute_payment_json,
+      async (error, payment) => {
+        if (error) {
+          console.error("PayPal Execute Error:", error.response);
+          return res.status(500).json({
+            success: false,
+            message: "Payment verification failed",
+          });
+        }
+
+        // ✅ Step 4: Verify amount (extra safety)
+        const paidAmount =
+          payment.transactions[0].amount.total;
+
+        if (parseFloat(paidAmount) !== order.totalAmount) {
+          return res.status(400).json({
+            success: false,
+            message: "Amount mismatch",
+          });
+        }
+
+        // 🔥 Step 5: Update stock (bulk)
+        const bulkOps = order.cartItems.map((item) => ({
+          updateOne: {
+            filter: { _id: item.productId },
+            update: { $inc: { totalStock: -item.quantity } },
+          },
+        }));
+
+        await Product.bulkWrite(bulkOps);
+
+        // 🧹 Step 6: Clear cart
+        await Cart.findByIdAndDelete(order.cartId);
+
+        // ✅ Step 7: Update order
+        order.paymentStatus = "paid";
+        order.orderStatus = "confirmed";
+        order.paymentId = paymentId;
+        order.payerId = payerId;
+
+        await order.save();
+
+        return res.status(200).json({
+          success: true,
+          message: "Payment successful",
+          data: order,
+        });
       }
-    }));
-
-    await Product.bulkWrite(bulkOps);
-
-    await Cart.findByIdAndDelete(order.cartId);
-
-    order.paymentStatus = "paid";
-    order.orderStatus = "confirmed";
-    order.paymentId = paymentId;
-    order.payerId = payerId;
-
-    await order.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Order confirmed",
-      data: order,
-    });
-
+    );
   } catch (e) {
-    return res.status(500).json({ success: false, message: e.message });
+    console.log(e);
+    return res.status(500).json({
+      success: false,
+      message: e.message,
+    });
   }
 };
+
+
 
 const getAllOrdersByUser = async (req, res) => {
   try {

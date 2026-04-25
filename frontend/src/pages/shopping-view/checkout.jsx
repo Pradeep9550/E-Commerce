@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import img from "../../assets/account.jpg"
 import { createNewOrder } from "@/store/shop/order-slice";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 function ShoppingCheckout() {
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -88,6 +89,7 @@ function ShoppingCheckout() {
       dispatch(createNewOrder(orderData)).then((data)=> {
         console.log(data, "Pradeep")
         if(data?.payload?.success) {
+           localStorage.setItem("currentOrderId", data.payload.orderId);
           setIsPaymemntStart(true)
         } else {
           setIsPaymemntStart(false)
@@ -95,9 +97,11 @@ function ShoppingCheckout() {
       })
     }
     
-    if(approvalURL) {
-      window.location.href = approvalURL;
-    }
+    useEffect(() => {
+  if (approvalURL) {
+    window.location.href = approvalURL;
+  }
+}, [approvalURL]);
     
 
  
