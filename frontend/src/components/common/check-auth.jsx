@@ -4,16 +4,17 @@ function CheckAuth({ isAuthenticated, user, isLoading, children }) {
 
   const location = useLocation();
 
-  // ✅ wait until auth loads (IMPORTANT)
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  // ✅ Paypal return bypass (VERY IMPORTANT)
+  // ✅ 1. PayPal return को कभी block मत करो
   if (location.pathname.includes("paypal-return")) {
     return children;
   }
 
+  // ✅ 2. जब तक auth check चल रहा है wait करो
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  // ✅ 3. root route logic
   if (location.pathname === "/") {
     if (!isAuthenticated) {
       return <Navigate to="/auth/login" />;
@@ -26,6 +27,7 @@ function CheckAuth({ isAuthenticated, user, isLoading, children }) {
     }
   }
 
+  // ✅ 4. unauth user
   if (
     !isAuthenticated &&
     !(location.pathname.includes("/login") ||
@@ -34,6 +36,7 @@ function CheckAuth({ isAuthenticated, user, isLoading, children }) {
     return <Navigate to="/auth/login" />;
   }
 
+  // ✅ 5. auth user shouldn't see login/register
   if (
     isAuthenticated &&
     (location.pathname.includes("/login") ||
@@ -46,6 +49,7 @@ function CheckAuth({ isAuthenticated, user, isLoading, children }) {
     }
   }
 
+  // ✅ 6. user trying admin
   if (
     isAuthenticated &&
     user?.role !== "admin" &&
@@ -54,6 +58,7 @@ function CheckAuth({ isAuthenticated, user, isLoading, children }) {
     return <Navigate to="/unauth-page" />;
   }
 
+  // ✅ 7. admin trying shop
   if (
     isAuthenticated &&
     user?.role === "admin" &&
